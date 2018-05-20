@@ -1,0 +1,141 @@
+\documentclass{beamer}
+
+\usepackage{graphicx}
+\usepackage[caption=false]{subfig}
+\usepackage{amsmath}
+
+\title{Deep Learning in NLP: A teaser trailer\\ \small{TaCoS 2018}}
+\author{Jens Johannsmeier}
+\date{October 10, 2016}
+
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+\begin{frame}{Why Machine Learning?}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/simple/easy.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Why Machine Learning?}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/simple/easy_solved.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{A more realistic problem}
+\begin{figure}
+\includegraphics[scale=0.5]{pictures/speech/wave_yes.png}
+\end{figure}
+What word is being spoken here?
+\end{frame}
+
+
+\begin{frame}{A more realistic problem}
+\begin{figure}
+\subfloat{\includegraphics[scale=0.37]{pictures/speech/wave_yes.png}}
+\subfloat{\includegraphics[scale=0.37]{pictures/speech/stft_yes.png}}
+\end{figure}
+bed, bird, cat, dog, down, eight, five, four, go, happy, house, left, marvin, nine, no, off, on, one, right, seven, sheila, six, stop, three, tree, two, up, wow, yes, zero?
+\end{frame}
+
+
+\begin{frame}{Another more realistic problem}
+``This is the worst movie I have ever seen.'' \\
+``This is a good movie.'' \\
+``This is not good.'' \bigskip
+
+Are these positive or negative statements?
+\end{frame}
+
+
+\begin{frame}{Nonlinear problems}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/simple/circles.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Transforming data}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/simple/circles_polar.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Another nonlinear problem}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/simple/spiral.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Polar coordinates...?}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/simple/spiral_polar.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Machine Learning as Pattern Matching}
+\begin{figure}
+\includegraphics[scale=0.5]{pictures/simple/easy_solved.png}
+\end{figure}
+$c_x = 2.99, c_y = 1.37$
+\end{frame}
+
+
+\begin{frame}{Machine Learning as Pattern Matching}
+\begin{figure}
+\includegraphics[scale=0.5]{pictures/simple/circles_polar.png}
+\end{figure}
+$c_x = 22.59, c_y = -0.21$
+\end{frame}
+
+
+\begin{frame}{Machine Learning as Pattern Matching}
+Examples from sentiment and maybe audio.\\
+Show limitations of simple features + linear models (no interaction).
+\end{frame}
+
+
+\begin{frame}{Non-linear Feature Composition}
+Real or constructed example of XOR-like problem (e.g.~not good/bad).
+\end{frame}
+
+
+\begin{frame}{Multilayer Perceptrons}
+Large-scale examples for sentiment analysis and speech recognition, with examples of learned features!
+Show inadequacy of e.g. bag-of-words representations to motivate more complex structures (RNNs).
+\end{frame}
+
+
+\begin{frame}{Recurrent Neural Networks}
+Schemes of recurrent/unrolled graphs.
+\end{frame}
+
+
+\begin{frame}{Sentiment Analysis with RNNs}
+Show hopefully good results and how RNN handles ``not good''.\\
+Generally analyze connections etc.
+\end{frame}
+
+
+\begin{frame}{Convolutional Neural Networks}
+Give idea of same unit repeated many times over space; local connections.\\
+Visual explanation of filters.
+\end{frame}
+
+
+\begin{frame}{Speech recognition with CNNs}
+Show patterns learned by CNN.
+\end{frame}
+
+\end{document}
