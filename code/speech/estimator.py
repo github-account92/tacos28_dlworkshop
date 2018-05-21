@@ -2,7 +2,7 @@ import argparse
 
 import tensorflow as tf
 
-from data import input_fn
+from data import input_fn, checkpoint_iterator
 
 
 N_CLASSES = 30
@@ -22,7 +22,8 @@ def model_fn_linear(features, labels, mode, params):
     else:
         reg = None
 
-    logits = tf.layers.dense(features, N_CLASSES, kernel_regularizer=reg)
+    logit_layer = tf.layers.Dense(N_CLASSES, kernel_regularizer=reg)
+    logits = logit_layer.apply(features)
 
     if mode == tf.estimator.ModeKeys.PREDICT:
         predictions = {"logits": logits,
@@ -32,23 +33,29 @@ def model_fn_linear(features, labels, mode, params):
 
     cross_ent = tf.losses.sparse_softmax_cross_entropy(
         labels=labels, logits=logits)
-    tf.summary.scalar("cross_ent", cross_ent)
     loss = cross_ent
     reg_loss = tf.losses.get_regularization_loss()
-    tf.summary.scalar("reg_loss", reg_loss)
     if reg_coeff:
         loss += reg_coeff * reg_loss
 
     acc = tf.reduce_mean(
         tf.cast(tf.equal(tf.argmax(logits, axis=1, output_type=tf.int32), labels),
                 tf.float32))
+
+    weights = logit_layer.trainable_weights[0]
+    tf.summary.scalar("l1_loss", tf.norm(weights, ord=1))
+    tf.summary.scalar("l2_loss", tf.norm(weights, ord=2))
+
+
     tf.summary.scalar("accuracy", acc)
+    tf.summary.scalar("cross_ent", cross_ent)
+
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         gs = tf.train.get_global_step()
         lr = tf.train.polynomial_decay(base_lr, gs, decay_steps, end_lr,
                                        decay_power)
-        tf.summary.scalar("learing_rate", lr)
+        tf.summary.scalar("learning_rate", lr)
         train_op = tf.train.AdamOptimizer(lr).minimize(loss,
                                                        global_step=gs)
         return tf.estimator.EstimatorSpec(mode=mode, loss=cross_ent,
@@ -103,3 +110,8 @@ elif args.mode == "predict":
     preds = est.predict(input_fn=lambda: input_fn(args.base_path, "dev", args.batch_size))
 elif args.mode == "eval":
     print(est.evaluate(input_fn=lambda: input_fn(args.base_path, "dev", args.batch_size)))
+elif args.mode == "eval-all":
+    for ckpt in checkpoint_iterator(args.model_dir):
+        print("Evaluating checkpoint {}...".format(ckpt))
+        eval_results = est.evaluate(input_fn=input_fn)
+        print("Evaluation results:\n", eval_results)
