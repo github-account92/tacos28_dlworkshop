@@ -46,10 +46,8 @@ def model_fn_linear(features, labels, mode, params):
     tf.summary.scalar("l1_loss", tf.norm(weights, ord=1))
     tf.summary.scalar("l2_loss", tf.norm(weights, ord=2))
 
-
     tf.summary.scalar("accuracy", acc)
     tf.summary.scalar("cross_ent", cross_ent)
-
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         gs = tf.train.get_global_step()
@@ -99,8 +97,10 @@ prms = {"base_lr": args.learning_rate[0],
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+config = tf.estimator.RunConfig(model_dir=args.model_dir, keep_checkpoint_max=0,
+                                save_checkpoints_steps=1000)
 est = tf.estimator.Estimator(model_fn=model_fn_linear,
-                             model_dir=args.model_dir,
+                             config=config,
                              params=prms)
 
 if args.mode == "train":
