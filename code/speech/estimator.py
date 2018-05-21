@@ -23,15 +23,16 @@ def model_fn_linear(features, labels, mode, params):
 
     cross_ent = tf.losses.sparse_softmax_cross_entropy(
         labels=labels, logits=logits)
-    acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(logits), labels),
-                                 tf.float32))
-    tf.summary.scalar(acc)
+    acc = tf.reduce_mean(
+        tf.cast(tf.equal(tf.argmax(logits, axis=1, output_type=tf.int32), labels),
+                tf.float32))
+    tf.summary.scalar("accuracy", acc)
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         gs = tf.train.get_global_step()
         lr = tf.train.polynomial_decay(base_lr, gs, decay_steps, end_lr,
                                        decay_power)
-        tf.summary.scalar(lr)
+        tf.summary.scalar("learing_rate", lr)
         train_op = tf.train.AdamOptimizer(lr).minimize(cross_ent,
                                                        global_step=gs)
         return tf.estimator.EstimatorSpec(mode=mode, loss=cross_ent,
@@ -61,15 +62,16 @@ parser.add_argument("-D", "--decay",
                     help="Decay steps and power.")
 args = parser.parse_args()
 
-params = {"base_lr": args.learning_rate[0],
-          "end_lr": args.learning_rate[1],
-          "decay_steps": int(args.decay[0]),
-          "decay_power": args.decay[1]}
+prms = {"base_lr": args.learning_rate[0],
+        "end_lr": args.learning_rate[1],
+        "decay_steps": int(args.decay[0]),
+        "decay_power": args.decay[1]}
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
 est = tf.estimator.Estimator(model_fn=model_fn_linear,
-                             model_dir=args.model_dir)
+                             model_dir=args.model_dir,
+                             params=prms)
 
 if args.mode == "train":
     est.train(input_fn=lambda: input_fn(args.base_path, "train", args.batch_size),

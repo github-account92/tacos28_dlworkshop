@@ -7,7 +7,8 @@ import tensorflow as tf
 
 def input_fn(base, dset, batchsize):
     data = tf.data.Dataset.from_generator(make_iterator(base, dset),
-                                          output_types=(tf.float32, tf.int32))
+                                          output_types=(tf.float32, tf.int32),
+                                          output_shapes=((16000,), ()))
     if dset == "train":
         data = data.apply(
                 tf.contrib.data.shuffle_and_repeat(buffer_size=1000))
