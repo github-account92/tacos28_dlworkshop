@@ -1,3 +1,4 @@
+import argparse
 import os
 
 import librosa
@@ -82,8 +83,6 @@ def make_tfrecord(out_path, base, dset):
             mel = librosa.feature.melspectrogram(seq, sr=16000, n_fft=400,
                                                  hop_length=160)
             mel = np.log(mel + 1e-10)
-            print(mel.min(), mel.max(), mel.shape)
-            input()
             tfex = tf.train.Example(
                 features=tf.train.Features(
                     feature={"audio": tf.train.Feature(
@@ -145,4 +144,10 @@ def parse_tfr(example_proto):
 
 
 if __name__ == "__main__":
-    make_tfrecord("test", "data_speech_commands_v0.01", "train")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path")
+    parser.add_argument("commands")
+    parser.add_argument("dset")
+    args = parser.parse_args()
+
+    make_tfrecord(args.path, args.commands, args.dset)
