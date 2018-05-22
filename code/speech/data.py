@@ -5,13 +5,26 @@ import numpy as np
 import tensorflow as tf
 
 
-def input_fn(base, dset, batchsize):
+def input_fn_raw(base, dset, batchsize):
     data = tf.data.Dataset.from_generator(make_iterator(base, dset),
                                           output_types=(tf.float32, tf.int32),
                                           output_shapes=((16000,), ()))
     if dset == "train":
         data = data.apply(
-                tf.contrib.data.shuffle_and_repeat(buffer_size=1000))
+                tf.contrib.data.shuffle_and_repeat(buffer_size=60000))
+    data = data.batch(batchsize)
+    data = data.prefetch(2)
+
+    iterator = data.make_one_shot_iterator()
+    return iterator.get_next()
+
+
+def input_fn_tfr(base, dset, batchsize):
+    data = tf.data.TFRecordDataset(base)
+    data = data.map(parse_tfr)
+    if dset == "train":
+        data = data.apply(
+                tf.contrib.data.shuffle_and_repeat(buffer_size=60000))
     data = data.batch(batchsize)
     data = data.prefetch(2)
 
@@ -62,6 +75,24 @@ def make_iterator(base, dset):
     return gen
 
 
+def make_tfrecord(out_path, base, dset):
+    iterator = make_iterator(base, dset)()
+    with tf.python_io.TFRecordWriter(out_path + dset + ".tfrecords") as writer:
+        for seq, label in iterator:
+            mel = librosa.feature.melspectrogram(seq, sr=16000, n_fft=400,
+                                                 hop_length=160)
+            mel = np.log(mel + 1e-10)
+            print(mel.min(), mel.max(), mel.shape)
+            input()
+            tfex = tf.train.Example(
+                features=tf.train.Features(
+                    feature={"audio": tf.train.Feature(
+                        float_list=tf.train.FloatList(value=mel.flatten())),
+                             "label": tf.train.Feature(
+                        int64_list=tf.train.Int64List(value=[label]))}))
+            writer.write(tfex.SerializeToString())
+
+
 def checkpoint_iterator(ckpt_folder):
     """Iterates over checkpoints in order and returns them.
 
@@ -103,3 +134,15 @@ def checkpoint_iterator(ckpt_folder):
             ckpt_file.write("model_checkpoint_path: " + ckpt + "\n")
             ckpt_file.write(orig)
         yield ckpt
+
+
+def parse_tfr(example_proto):
+    features = {"audio": tf.FixedLenFeature((128*101,), tf.float32),
+                "label": tf.FixedLenFeature((), tf.int64)}
+    parsed_features = tf.parse_single_example(example_proto, features)
+    return (tf.reshape(parsed_features["audio"], [128, 101]),
+            tf.cast(parsed_features["label"], tf.int32))
+
+
+if __name__ == "__main__":
+    make_tfrecord("test", "data_speech_commands_v0.01", "train")

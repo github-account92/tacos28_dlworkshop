@@ -2,7 +2,7 @@ import argparse
 
 import tensorflow as tf
 
-from data import input_fn, checkpoint_iterator
+from data import input_fn_raw, input_fn_tfr, checkpoint_iterator
 
 
 N_CLASSES = 30
@@ -22,6 +22,7 @@ def model_fn_linear(features, labels, mode, params):
     else:
         reg = None
 
+    features = tf.layers.flatten(features)
     logit_layer = tf.layers.Dense(N_CLASSES, kernel_regularizer=reg)
     logits = logit_layer.apply(features)
 
@@ -87,6 +88,9 @@ parser.add_argument("-R", "--reg",
                     nargs=2,
                     default=[None, 0.0],
                     help="Regularization type and coefficient.")
+parser.add_argument("-M", "--mel",
+                    action="store_true",
+                    help="Use mel spectrogram data instead (from TFR!!).")
 args = parser.parse_args()
 
 prms = {"base_lr": args.learning_rate[0],
@@ -104,15 +108,24 @@ est = tf.estimator.Estimator(model_fn=model_fn_linear,
                              config=config,
                              params=prms)
 
+if args.mel:
+    input_fn = input_fn_tfr
+else:
+    input_fn = input_fn_raw
+
 if args.mode == "train":
-    est.train(input_fn=lambda: input_fn(args.base_path, "train", args.batch_size),
-              steps=int(args.decay[0]))
+    inp = lambda: input_fn(args.base_path, "train", args.batch_size)
+else:
+    inp = lambda: input_fn(args.base_path, "dev", args.batch_size)
+
+if args.mode == "train":
+    est.train(input_fn=inp, steps=int(args.decay[0]))
 elif args.mode == "predict":
-    preds = est.predict(input_fn=lambda: input_fn(args.base_path, "dev", args.batch_size))
+    preds = est.predict(input_fn=inp)
 elif args.mode == "eval":
-    print(est.evaluate(input_fn=lambda: input_fn(args.base_path, "dev", args.batch_size)))
+    print(est.evaluate(input_fn=inp))
 elif args.mode == "eval-all":
     for ckpt in checkpoint_iterator(args.model_dir):
         print("Evaluating checkpoint {}...".format(ckpt))
-        eval_results = est.evaluate(input_fn=lambda: input_fn(args.base_path, "dev", args.batch_size))
+        eval_results = est.evaluate(input_fn=inp)
         print("Evaluation results:\n", eval_results)
