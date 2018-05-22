@@ -38,8 +38,9 @@ def model_fn_linear(features, labels, mode, params):
     if reg_coeff:
         loss += reg_coeff * reg_loss
 
+    labels_predict = tf.argmax(logits, axis=1, output_type=tf.int32)
     acc = tf.reduce_mean(
-        tf.cast(tf.equal(tf.argmax(logits, axis=1, output_type=tf.int32), labels),
+        tf.cast(tf.equal(labels_predict, labels),
                 tf.float32))
 
     weights = logit_layer.trainable_weights[0]
@@ -59,7 +60,7 @@ def model_fn_linear(features, labels, mode, params):
         return tf.estimator.EstimatorSpec(mode=mode, loss=cross_ent,
                                           train_op=train_op)
 
-    eval_metric_ops = {"accuracy": tf.metrics.accuracy(labels, logits),
+    eval_metric_ops = {"accuracy": tf.metrics.accuracy(labels, labels_predict),
                        "cross_ent": tf.metrics.mean(cross_ent)}
     return tf.estimator.EstimatorSpec(mode=mode, loss=cross_ent,
                                       eval_metric_ops=eval_metric_ops)
