@@ -113,5 +113,5 @@ elif args.mode == "eval":
 elif args.mode == "eval-all":
     for ckpt in checkpoint_iterator(args.model_dir):
         print("Evaluating checkpoint {}...".format(ckpt))
-        eval_results = est.evaluate(input_fn=input_fn)
+        eval_results = est.evaluate(input_fn=lambda: input_fn(args.base_path, "dev", args.batch_size))
         print("Evaluation results:\n", eval_results)
