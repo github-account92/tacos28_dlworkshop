@@ -13,6 +13,8 @@ def model_fn_linear(features, labels, mode, params):
     decay_power = params["decay_power"]
     reg_type = params["reg_type"]
     reg_coeff = params["reg_coeff"]
+    mlp = params["mlp"]
+    dropout = params["dropout"]
     if reg_type == "l1":
         reg = lambda x: tf.norm(x, ord=1)
     elif reg_type == "l2":
@@ -21,6 +23,12 @@ def model_fn_linear(features, labels, mode, params):
         reg = None
 
     features = tf.layers.flatten(features)
+    if mlp:
+        features = tf.layers.dense(features, 8192, activation=tf.nn.relu,
+                                   kernel_regularizer=reg)
+    if dropout:
+        features = tf.layers.dropout(
+            features, training=mode == tf.estimator.ModeKeys.TRAIN)
     logit_layer = tf.layers.Dense(N_CLASSES, kernel_regularizer=reg)
     logits = logit_layer.apply(features)
 
@@ -66,19 +74,21 @@ def model_fn_linear(features, labels, mode, params):
 
 
 def run(mode, base_path, model_dir,
-        batch_size, learning_rate, decay, reg, mel):
+        batch_size, learning_rate, decay, reg, mel, mlp, dropout):
     prms = {"base_lr": learning_rate[0],
             "end_lr": learning_rate[1],
             "decay_steps": int(decay[0]),
             "decay_power": decay[1],
             "reg_type": reg[0],
-            "reg_coeff": float(reg[1])}
+            "reg_coeff": float(reg[1]),
+            "mlp": mlp,
+            "dropout": dropout}
 
     tf.logging.set_verbosity(tf.logging.INFO)
 
     config = tf.estimator.RunConfig(model_dir=model_dir,
                                     keep_checkpoint_max=0,
-                                    save_checkpoints_steps=1000)
+                                    save_checkpoints_steps=5000)
     est = tf.estimator.Estimator(model_fn=model_fn_linear,
                                  config=config,
                                  params=prms)

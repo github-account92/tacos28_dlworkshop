@@ -60,7 +60,7 @@ def make_iterator(base, dset):
     folders = [f for f in os.listdir(base) if
                os.path.isdir(os.path.join(base, f)) and f != "_background_noise_"]
     class_map = dict((cl, ind) for (ind, cl) in enumerate(sorted(folders)))
-    pickle.dump(class_map, open(base + "_vocab", mode="w"))
+    pickle.dump(class_map, open(base + "_vocab", mode="wb"))
 
     def gen():
         for label in folders:

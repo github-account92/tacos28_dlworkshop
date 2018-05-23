@@ -25,7 +25,14 @@ parser.add_argument("-R", "--reg",
 parser.add_argument("-M", "--mel",
                     action="store_true",
                     help="Use mel spectrogram data instead (from TFR!!).")
+parser.add_argument("-X", "--mlp",
+                    action="store_true",
+                    help="Use MP with 8192 hidden units...")
+parser.add_argument("-Y", "--dropout",
+                    action="store_true",
+                    help="Use dropout in hidden layer.")
 args = parser.parse_args()
 
 run(args.mode, args.base_path, args.model_dir,
-    args.batch_size, args.learning_rate, args.decay, args.reg, args.mel)
+    args.batch_size, args.learning_rate, args.decay, args.reg, args.mel,
+    args.mlp, args.dropout)
