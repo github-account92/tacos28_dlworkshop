@@ -141,7 +141,7 @@ def parse_tfr(example_proto):
     features = {"audio": tf.FixedLenFeature((128*101,), tf.float32),
                 "label": tf.FixedLenFeature((), tf.int64)}
     parsed_features = tf.parse_single_example(example_proto, features)
-    return (tf.reshape(parsed_features["audio"], [128, 101]),
+    return ((tf.reshape(parsed_features["audio"], [128, 101]) + 10) / 20,
             tf.cast(parsed_features["label"], tf.int32))
 
 
