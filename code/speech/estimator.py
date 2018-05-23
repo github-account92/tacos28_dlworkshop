@@ -1,5 +1,3 @@
-import argparse
-
 import tensorflow as tf
 
 from data import input_fn_raw, input_fn_tfr, checkpoint_iterator
@@ -67,65 +65,44 @@ def model_fn_linear(features, labels, mode, params):
                                       eval_metric_ops=eval_metric_ops)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("mode")
-parser.add_argument("base_path")
-parser.add_argument("model_dir")
-parser.add_argument("-B", "--batch_size",
-                    type=int,
-                    default=128)
-parser.add_argument("-L", "--learning_rate",
-                    nargs=2,
-                    type=float,
-                    default=[0.001, 0.0000001],
-                    help="Initial/final learning rate.")
-parser.add_argument("-D", "--decay",
-                    nargs=2,
-                    type=float,
-                    default=[100000, 2.0],
-                    help="Decay steps and power.")
-parser.add_argument("-R", "--reg",
-                    nargs=2,
-                    default=[None, 0.0],
-                    help="Regularization type and coefficient.")
-parser.add_argument("-M", "--mel",
-                    action="store_true",
-                    help="Use mel spectrogram data instead (from TFR!!).")
-args = parser.parse_args()
+def run(mode, base_path, model_dir,
+        batch_size, learning_rate, decay, reg, mel):
+    prms = {"base_lr": learning_rate[0],
+            "end_lr": learning_rate[1],
+            "decay_steps": int(decay[0]),
+            "decay_power": decay[1],
+            "reg_type": reg[0],
+            "reg_coeff": float(reg[1])}
 
-prms = {"base_lr": args.learning_rate[0],
-        "end_lr": args.learning_rate[1],
-        "decay_steps": int(args.decay[0]),
-        "decay_power": args.decay[1],
-        "reg_type": args.reg[0],
-        "reg_coeff": float(args.reg[1])}
+    tf.logging.set_verbosity(tf.logging.INFO)
 
-tf.logging.set_verbosity(tf.logging.INFO)
+    config = tf.estimator.RunConfig(model_dir=model_dir,
+                                    keep_checkpoint_max=0,
+                                    save_checkpoints_steps=1000)
+    est = tf.estimator.Estimator(model_fn=model_fn_linear,
+                                 config=config,
+                                 params=prms)
 
-config = tf.estimator.RunConfig(model_dir=args.model_dir, keep_checkpoint_max=0,
-                                save_checkpoints_steps=1000)
-est = tf.estimator.Estimator(model_fn=model_fn_linear,
-                             config=config,
-                             params=prms)
+    if mel:
+        input_fn = input_fn_tfr
+    else:
+        input_fn = input_fn_raw
 
-if args.mel:
-    input_fn = input_fn_tfr
-else:
-    input_fn = input_fn_raw
+    if mode == "train":
+        inp = lambda: input_fn(base_path, "train", batch_size)
+    else:
+        inp = lambda: input_fn(base_path, "dev", batch_size)
 
-if args.mode == "train":
-    inp = lambda: input_fn(args.base_path, "train", args.batch_size)
-else:
-    inp = lambda: input_fn(args.base_path, "dev", args.batch_size)
-
-if args.mode == "train":
-    est.train(input_fn=inp, steps=int(args.decay[0]))
-elif args.mode == "predict":
-    preds = est.predict(input_fn=inp)
-elif args.mode == "eval":
-    print(est.evaluate(input_fn=inp))
-elif args.mode == "eval-all":
-    for ckpt in checkpoint_iterator(args.model_dir):
-        print("Evaluating checkpoint {}...".format(ckpt))
-        eval_results = est.evaluate(input_fn=inp)
-        print("Evaluation results:\n", eval_results)
+    if mode == "train":
+        est.train(input_fn=inp, steps=int(decay[0]))
+    elif mode == "predict":
+        return est.predict(input_fn=inp)
+    elif mode == "eval":
+        print(est.evaluate(input_fn=inp))
+    elif mode == "eval-all":
+        for ckpt in checkpoint_iterator(model_dir):
+            print("Evaluating checkpoint {}...".format(ckpt))
+            eval_results = est.evaluate(input_fn=inp)
+            print("Evaluation results:\n", eval_results)
+    elif mode == "return":
+        return est
