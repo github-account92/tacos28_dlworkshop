@@ -82,6 +82,49 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
     return iterator.get_next()
 
 
+def checkpoint_iterator(ckpt_folder):
+    """Iterates over checkpoints in order and returns them.
+
+    This modifies the "checkpoint meta file" directly which might not be the
+    smartest way to do it.
+    Note that this file yields checkpoint names for convenience, but the main
+    function is actually the modification of the meta file.
+
+    Parameters:
+        ckpt_folder: Path to folder that has all the checkpoints. Usually the
+                     estimator's model_dir. Also needs to contain a file called
+                     "checkpoint" that acts as the "meta file".
+
+    Yields:
+        Paths to checkpoints, in order.
+    """
+    # we store the original text to re-write it
+    try:
+        with open(os.path.join(ckpt_folder, "checkpoint")) as ckpt_file:
+            next(ckpt_file)
+            orig = ckpt_file.read()
+    except:  # the file might be empty because reasons...
+        orig = ""
+
+    # get all the checkpoints
+    # we can't rely on the meta file (doesn't store permanent checkpoints :()
+    # so we check the folder instead.
+    ckpts = set()
+    for file in os.listdir(ckpt_folder):
+        if file.split("-")[0] == "model.ckpt":
+            ckpts.add(int(file.split("-")[1].split(".")[0]))
+    ckpts = sorted(list(ckpts))
+    ckpts = ["\"model.ckpt-" + str(ckpt) + "\"" for ckpt in ckpts]
+
+    # fill them in one-by-one and leave
+    for ckpt in ckpts:
+        with open(os.path.join(ckpt_folder, "checkpoint"),
+                  mode="w") as ckpt_file:
+            ckpt_file.write("model_checkpoint_path: " + ckpt + "\n")
+            ckpt_file.write(orig)
+        yield ckpt
+
+
 if __name__ == "__main__":
     nexet = input_fn_bow(
         "data/training.1600000.processed.noemoticon.csv", "dev", 5, 3)
