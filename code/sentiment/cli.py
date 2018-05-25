@@ -36,5 +36,5 @@ parser.add_argument("-Y", "--dropout",
 args = parser.parse_args()
 
 run(args.mode, args.base_path, args.model_dir,
-    args.batch_size, args.learning_rate, args.decay, args.reg, args.mel,
+    args.batch_size, args.learning_rate, args.decay, args.reg, args.mfk,
     args.mlp, args.dropout)

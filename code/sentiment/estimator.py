@@ -22,6 +22,7 @@ def model_fn_linear(features, labels, mode, params):
     else:
         reg = None
 
+    features.set_shape([None, 111372])  # TODO lol
     features = tf.layers.flatten(features)
     if mlp:
         features = tf.layers.dense(features, 8192, activation=tf.nn.relu,

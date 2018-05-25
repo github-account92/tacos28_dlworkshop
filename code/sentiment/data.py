@@ -13,7 +13,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
         print("Found vocabulary, loading...")
         vocab = pickle.load(open("vocab", mode="rb"))
 
-        with open(base) as csv:
+        with open(base, encoding="ISO-8859-1") as csv:
             for line in csv:
                 label, text = line.split(",")[0][1], line.split(",")[-1][1:-2].split()
                 if label == "0":
@@ -24,7 +24,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
     else:
         word_count = {}
         print("Gathering vocabulary...")
-        with open(base) as csv:
+        with open(base, encoding="ISO-8859-1") as csv:
             for line in csv:
                 label, text = line.split(",")[0][1], line.split(",")[-1][1:-2].split()
                 if label == "0":
@@ -55,7 +55,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
 
     def to_bow(ind, label):
         words = tweets[ind]
-        bow = np.zeros(num_known, dtype=np.int32)
+        bow = np.zeros(num_known, dtype=np.float32)
         for word in words:
             bow[vocab[word]] += 1
         return bow, label
@@ -74,7 +74,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
 
     data = data.map(
         lambda ind, label: tuple(
-            tf.py_func(to_bow, [ind, label], [tf.int32, tf.int32], False)))
+            tf.py_func(to_bow, [ind, label], [tf.float32, tf.int32], False)))
     data = data.batch(batchsize)
     data = data.prefetch(2)
 
