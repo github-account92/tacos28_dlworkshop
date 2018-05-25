@@ -3,9 +3,6 @@ import tensorflow as tf
 from data import input_fn_bow, checkpoint_iterator
 
 
-N_CLASSES = 30
-
-
 def model_fn_linear(features, labels, mode, params):
     base_lr = params["base_lr"]
     end_lr = params["end_lr"]
@@ -22,7 +19,6 @@ def model_fn_linear(features, labels, mode, params):
     else:
         reg = None
 
-    features.set_shape([None, 111372])  # TODO lol
     features = tf.layers.flatten(features)
     if mlp:
         features = tf.layers.dense(features, 8192, activation=tf.nn.relu,
@@ -30,23 +26,23 @@ def model_fn_linear(features, labels, mode, params):
     if dropout:
         features = tf.layers.dropout(
             features, training=mode == tf.estimator.ModeKeys.TRAIN)
-    logit_layer = tf.layers.Dense(N_CLASSES, kernel_regularizer=reg)
+    logit_layer = tf.layers.Dense(1, kernel_regularizer=reg)
     logits = logit_layer.apply(features)
 
     if mode == tf.estimator.ModeKeys.PREDICT:
         predictions = {"logits": logits,
-                       "probabilities": tf.nn.softmax(logits),
+                       "probabilities": tf.nn.sigmoid(logits),
                        "input": features}
         return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
-    cross_ent = tf.losses.sparse_softmax_cross_entropy(
+    cross_ent = tf.losses.sigmoid_cross_entropy(
         labels=labels, logits=logits)
     loss = cross_ent
     reg_loss = tf.losses.get_regularization_loss()
     if reg_coeff:
         loss += reg_coeff * reg_loss
 
-    labels_predict = tf.argmax(logits, axis=1, output_type=tf.int32)
+    labels_predict = tf.where(tf.greater_equal(logits, 0), [[1]], [[0]])
     acc = tf.reduce_mean(
         tf.cast(tf.equal(labels_predict, labels),
                 tf.float32))

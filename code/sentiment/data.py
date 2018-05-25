@@ -79,7 +79,9 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
     data = data.prefetch(2)
 
     iterator = data.make_one_shot_iterator()
-    return iterator.get_next()
+    bows, labels = iterator.get_next()
+    bows.set_shape([None, num_known])
+    return bows, labels
 
 
 def checkpoint_iterator(ckpt_folder):
