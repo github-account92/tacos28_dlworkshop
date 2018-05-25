@@ -36,13 +36,16 @@ def model_fn_linear(features, labels, mode, params):
         return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
     cross_ent = tf.losses.sigmoid_cross_entropy(
-        labels=labels, logits=logits)
+        multi_class_labels=labels, logits=logits)
     loss = cross_ent
     reg_loss = tf.losses.get_regularization_loss()
     if reg_coeff:
         loss += reg_coeff * reg_loss
 
-    labels_predict = tf.where(tf.greater_equal(logits, 0), [[1]], [[0]])
+    labels_predict = tf.where(
+        tf.greater_equal(logits, 0),
+        tf.ones(tf.shape(logits), dtype=tf.int32),
+        tf.zeros(tf.shape(logits), dtype=tf.int32))
     acc = tf.reduce_mean(
         tf.cast(tf.equal(labels_predict, labels),
                 tf.float32))

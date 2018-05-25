@@ -20,6 +20,8 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
                     labels.append(0)
                 elif label == "4":
                     labels.append(1)
+                elif label == "2":
+                    continue
                 tweets.append(text)
     else:
         word_count = {}
@@ -31,6 +33,8 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
                     labels.append(0)
                 elif label == "4":
                     labels.append(1)
+                elif label == "2":
+                    continue
                 tweets.append(text)
                 for word in text:
                     if word not in word_count:
@@ -58,7 +62,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
         bow = np.zeros(num_known, dtype=np.float32)
         for word in words:
             bow[vocab[word]] += 1
-        return bow, label
+        return bow, [label]
 
     def gen():
         for ind, label in enumerate(labels):
@@ -79,9 +83,10 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
     data = data.prefetch(2)
 
     iterator = data.make_one_shot_iterator()
-    bows, labels = iterator.get_next()
-    bows.set_shape([None, num_known])
-    return bows, labels
+    bow_batch, label_batch = iterator.get_next()
+    bow_batch.set_shape([None, num_known])
+    label_batch.set_shape([None, 1])
+    return bow_batch, label_batch
 
 
 def checkpoint_iterator(ckpt_folder):
@@ -129,9 +134,9 @@ def checkpoint_iterator(ckpt_folder):
 
 if __name__ == "__main__":
     nexet = input_fn_bow(
-        "data/training.1600000.processed.noemoticon.csv", "dev", 5, 3)
+        "data/testdata.manual.2009.06.14.csv", "dev", 5, 3)
     with tf.Session() as sess:
         while True:
-            bobo, label = sess.run(nexet)
-            print(bobo.shape, label)
+            bobo, lab = sess.run(nexet)
+            print(bobo.shape, lab)
             input()
