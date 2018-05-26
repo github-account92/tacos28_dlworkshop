@@ -61,7 +61,10 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
         words = tweets[ind]
         bow = np.zeros(num_known, dtype=np.float32)
         for word in words:
-            bow[vocab[word]] += 1
+            if word in vocab:
+                bow[vocab[word]] += 1
+            else:
+                bow[0] += 1
         return bow, [label]
 
     def gen():
