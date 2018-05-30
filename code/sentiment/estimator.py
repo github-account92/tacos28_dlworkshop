@@ -1,6 +1,8 @@
+import pickle
+
 import tensorflow as tf
 
-from data import input_fn_bow, checkpoint_iterator
+from data import input_fn_bow, input_fn_raw, checkpoint_iterator
 
 
 def model_fn_linear(features, labels, mode, params):
@@ -12,6 +14,8 @@ def model_fn_linear(features, labels, mode, params):
     reg_coeff = params["reg_coeff"]
     mlp = params["mlp"]
     dropout = params["dropout"]
+    rnn = params["rnn"]
+
     if reg_type == "l1":
         reg = lambda x: tf.norm(x, ord=1)
     elif reg_type == "l2":
@@ -19,13 +23,20 @@ def model_fn_linear(features, labels, mode, params):
     else:
         reg = None
 
-    features = tf.layers.flatten(features)
-    if mlp:
-        features = tf.layers.dense(features, mlp, activation=tf.nn.relu,
-                                   kernel_regularizer=reg)
-    if dropout:
-        features = tf.layers.dropout(
-            features, training=mode == tf.estimator.ModeKeys.TRAIN)
+    if rnn:
+        vocab = pickle.load(open("vocab", mode="rb"))
+        one_hot = tf.one_hot(features["seq"], depth=len(vocab))
+        cell = tf.nn.rnn_cell.BasicRNNCell(512)
+        features = tf.nn.dynamic_rnn(
+            cell, one_hot, sequence_length=features["length"],
+            dtype=tf.float32)[1]
+    else:
+        if mlp:
+            features = tf.layers.dense(features, mlp, activation=tf.nn.relu,
+                                       kernel_regularizer=reg)
+        if dropout:
+            features = tf.layers.dropout(
+                features, training=mode == tf.estimator.ModeKeys.TRAIN)
     logit_layer = tf.layers.Dense(1, kernel_regularizer=reg)
     logits = logit_layer.apply(features)
 
@@ -74,7 +85,8 @@ def model_fn_linear(features, labels, mode, params):
 
 
 def run(mode, base_path, model_dir,
-        batch_size, learning_rate, decay, reg, min_for_known, mlp, dropout):
+        batch_size, learning_rate, decay, reg, min_for_known, mlp, dropout,
+        rnn):
     prms = {"base_lr": learning_rate[0],
             "end_lr": learning_rate[1],
             "decay_steps": int(decay[0]),
@@ -82,7 +94,8 @@ def run(mode, base_path, model_dir,
             "reg_type": reg[0],
             "reg_coeff": float(reg[1]),
             "mlp": mlp,
-            "dropout": dropout}
+            "dropout": dropout,
+            "rnn": rnn}
 
     tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -92,11 +105,15 @@ def run(mode, base_path, model_dir,
     est = tf.estimator.Estimator(model_fn=model_fn_linear,
                                  config=config,
                                  params=prms)
+    if rnn:
+        inp_fn = input_fn_raw
+    else:
+        inp_fn = input_fn_bow
 
     if mode == "train":
-        inp = lambda: input_fn_bow(base_path, "train", min_for_known, batch_size)
+        inp = lambda: inp_fn(base_path, "train", min_for_known, batch_size)
     else:
-        inp = lambda: input_fn_bow(base_path, "dev", min_for_known, batch_size)
+        inp = lambda: inp_fn(base_path, "dev", min_for_known, batch_size)
 
     if mode == "train":
         est.train(input_fn=inp, steps=int(decay[0]))
