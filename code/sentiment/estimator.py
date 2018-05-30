@@ -21,7 +21,7 @@ def model_fn_linear(features, labels, mode, params):
 
     features = tf.layers.flatten(features)
     if mlp:
-        features = tf.layers.dense(features, 8192, activation=tf.nn.relu,
+        features = tf.layers.dense(features, mlp, activation=tf.nn.relu,
                                    kernel_regularizer=reg)
     if dropout:
         features = tf.layers.dropout(

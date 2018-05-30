@@ -26,8 +26,9 @@ parser.add_argument("-M", "--mel",
                     action="store_true",
                     help="Use mel spectrogram data instead (from TFR!!).")
 parser.add_argument("-X", "--mlp",
-                    action="store_true",
-                    help="Use MLP with 8192 hidden units...")
+                    type=int,
+                    default=0,
+                    help="Use MLP with FLAG hidden units...")
 parser.add_argument("-Y", "--dropout",
                     action="store_true",
                     help="Use dropout in hidden layer.")
