@@ -64,7 +64,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
                 bow[vocab[word]] += 1
             else:
                 bow[0] += 1
-        return bow, [label]
+        return bow, np.array([label], dtype=np.int32)
 
     def gen():
         for ind, label in enumerate(labels):
@@ -76,7 +76,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
 
     if dset == "train":
         data = data.apply(
-            tf.contrib.data.shuffle_and_repeat(buffer_size=1600))
+            tf.contrib.data.shuffle_and_repeat(buffer_size=1600000))
 
     data = data.map(
         lambda ind, label: tuple(
@@ -150,7 +150,9 @@ def input_fn_raw(base, dset, min_for_known, batchsize):
             else:
                 return
 
-        return [getter(w) for w in words], len(words), [label]
+        return (np.array([getter(w) for w in words], dtype=np.int32),
+                np.array(len(words), dtype=np.int32),
+                np.array([label], dtype=np.int32))
 
     def gen():
         for ind, label in enumerate(labels):
@@ -162,7 +164,7 @@ def input_fn_raw(base, dset, min_for_known, batchsize):
 
     if dset == "train":
         data = data.apply(
-            tf.contrib.data.shuffle_and_repeat(buffer_size=1600))
+            tf.contrib.data.shuffle_and_repeat(buffer_size=1600000))
 
     data = data.map(
         lambda ind, label: tuple(

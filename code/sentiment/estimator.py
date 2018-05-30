@@ -25,7 +25,7 @@ def model_fn_linear(features, labels, mode, params):
 
     if rnn:
         vocab = pickle.load(open("vocab", mode="rb"))
-        one_hot = tf.one_hot(features["seq"], depth=len(vocab))
+        one_hot = tf.one_hot(features["seq"], depth=max(vocab.values()) + 1)
         cell = tf.nn.rnn_cell.BasicRNNCell(512)
         features = tf.nn.dynamic_rnn(
             cell, one_hot, sequence_length=features["length"],
