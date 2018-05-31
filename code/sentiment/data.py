@@ -91,7 +91,7 @@ def input_fn_bow(base, dset, min_for_known, batchsize):
     return bow_batch, label_batch
 
 
-def input_fn_raw(base, dset, min_for_known, batchsize):
+def input_fn_raw(base, dset, min_for_known, batchsize, chars=False):
     labels = []
     tweets = []
     if os.path.exists("vocab"):
@@ -100,7 +100,9 @@ def input_fn_raw(base, dset, min_for_known, batchsize):
 
         with open(base, encoding="ISO-8859-1") as csv:
             for line in csv:
-                label, text = line.split(",")[0][1], line.split(",")[-1][1:-2].split()
+                label, text = line.split(",")[0][1], line.split(",")[-1][1:-2]
+                if not chars:
+                    text = text.split()
                 if label == "0":
                     labels.append(0)
                 elif label == "4":
@@ -113,7 +115,9 @@ def input_fn_raw(base, dset, min_for_known, batchsize):
         print("Gathering vocabulary...")
         with open(base, encoding="ISO-8859-1") as csv:
             for line in csv:
-                label, text = line.split(",")[0][1], line.split(",")[-1][1:-2].split()
+                label, text = line.split(",")[0][1], line.split(",")[-1][1:-2]
+                if not chars:
+                    text = text.split()
                 if label == "0":
                     labels.append(0)
                 elif label == "4":
@@ -148,7 +152,7 @@ def input_fn_raw(base, dset, min_for_known, batchsize):
             if w in vocab:
                 return vocab[w]
             else:
-                return
+                return 0
 
         return (np.array([getter(w) for w in words], dtype=np.int32),
                 np.array(len(words), dtype=np.int32),
@@ -227,9 +231,9 @@ def checkpoint_iterator(ckpt_folder):
 
 if __name__ == "__main__":
     nexet = input_fn_raw(
-        "data/testdata.manual.2009.06.14.csv", "dev", 5, 3)
+        "data/testdata.manual.2009.06.14.csv", "dev", 5, 1)
     with tf.Session() as sess:
         while True:
             bobo, lab = sess.run(nexet)
-            print(bobo, lab)
-            input()
+            if bobo["seq"].shape[1] < 2:
+                print("VERY SHORT", bobo)
