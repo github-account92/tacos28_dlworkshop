@@ -86,7 +86,7 @@ def model_fn_linear(features, labels, mode, params):
 
 def run(mode, base_path, model_dir,
         batch_size, learning_rate, decay, reg, min_for_known, mlp, dropout,
-        rnn):
+        rnn, use_char):
     prms = {"base_lr": learning_rate[0],
             "end_lr": learning_rate[1],
             "decay_steps": int(decay[0]),
@@ -106,7 +106,7 @@ def run(mode, base_path, model_dir,
                                  config=config,
                                  params=prms)
     if rnn:
-        inp_fn = input_fn_raw
+        inp_fn = lambda x, y, z: input_fn_raw(x, y, z, chars=use_char)
     else:
         inp_fn = input_fn_bow
 

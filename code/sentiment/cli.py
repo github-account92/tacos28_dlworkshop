@@ -1,6 +1,7 @@
 import argparse
 from estimator import run
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("mode")
 parser.add_argument("base_path")
@@ -37,8 +38,11 @@ parser.add_argument("-Y", "--dropout",
 parser.add_argument("-Z", "--rnn",
                     action="store_true",
                     help="Use RNN; ignores mlp/dropout.")
+parser.add_argument("-C", "--char",
+                    action="store_true",
+                    help="Work on characters instead of words.")
 args = parser.parse_args()
 
 run(args.mode, args.base_path, args.model_dir,
     args.batch_size, args.learning_rate, args.decay, args.reg, args.mfk,
-    args.mlp, args.dropout, args.rnn)
+    args.mlp, args.dropout, args.rnn, args.char)
