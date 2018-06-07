@@ -33,6 +33,7 @@ def model_fn_linear(features, labels, mode, params):
             features, training=mode == tf.estimator.ModeKeys.TRAIN)
         features = tf.nn.relu(features)
         features = tf.layers.max_pooling2d(features, 2, 2, padding="same")
+        pool1 = features
         features = tf.layers.conv2d(features, 128, 5, padding="same",
                                     activation=None,
                                     kernel_regularizer=reg)
@@ -40,6 +41,7 @@ def model_fn_linear(features, labels, mode, params):
             features, training=mode == tf.estimator.ModeKeys.TRAIN)
         features = tf.nn.relu(features)
         features = tf.layers.max_pooling2d(features, 2, 2, padding="same")
+        pool2 = features
 
     features = tf.layers.flatten(features)
     if mlp:
@@ -58,6 +60,8 @@ def model_fn_linear(features, labels, mode, params):
         predictions = {"logits": logits,
                        "probabilities": tf.nn.softmax(logits),
                        "input": features}
+        if conv:
+            predictions.update({"pool1": pool1, "pool2": pool2})
         return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
     cross_ent = tf.losses.sparse_softmax_cross_entropy(
