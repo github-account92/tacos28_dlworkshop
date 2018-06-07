@@ -27,18 +27,27 @@ def model_fn_linear(features, labels, mode, params):
     if conv:
         features = tf.expand_dims(features, -1)
         features = tf.layers.conv2d(features, 64, 5, padding="same",
-                                    activation=tf.nn.relu,
+                                    activation=None,
                                     kernel_regularizer=reg)
+        features = tf.layers.batch_normalization(
+            features, training=mode == tf.estimator.ModeKeys.TRAIN)
+        features = tf.nn.relu(features)
         features = tf.layers.max_pooling2d(features, 2, 2, padding="same")
         features = tf.layers.conv2d(features, 128, 5, padding="same",
-                                    activation=tf.nn.relu,
+                                    activation=None,
                                     kernel_regularizer=reg)
+        features = tf.layers.batch_normalization(
+            features, training=mode == tf.estimator.ModeKeys.TRAIN)
+        features = tf.nn.relu(features)
         features = tf.layers.max_pooling2d(features, 2, 2, padding="same")
 
     features = tf.layers.flatten(features)
     if mlp:
-        features = tf.layers.dense(features, mlp, activation=tf.nn.relu,
+        features = tf.layers.dense(features, mlp, activation=None,
                                    kernel_regularizer=reg)
+        features = tf.layers.batch_normalization(
+            features, training=mode == tf.estimator.ModeKeys.TRAIN)
+        features = tf.nn.relu(features)
     if dropout:
         features = tf.layers.dropout(
             features, training=mode == tf.estimator.ModeKeys.TRAIN)
@@ -75,8 +84,11 @@ def model_fn_linear(features, labels, mode, params):
         lr = tf.train.polynomial_decay(base_lr, gs, decay_steps, end_lr,
                                        decay_power)
         tf.summary.scalar("learning_rate", lr)
-        train_op = tf.train.AdamOptimizer(lr).minimize(loss,
-                                                       global_step=gs)
+
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            train_op = tf.train.AdamOptimizer(lr).minimize(loss,
+                                                           global_step=gs)
         return tf.estimator.EstimatorSpec(mode=mode, loss=cross_ent,
                                           train_op=train_op)
 

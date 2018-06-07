@@ -39,4 +39,4 @@ args = parser.parse_args()
 
 run(args.mode, args.base_path, args.model_dir,
     args.batch_size, args.learning_rate, args.decay, args.reg, args.mel,
-    args.mlp, args.dropout, args.cnn)
+    args.mlp, args.dropout, args.conv)
