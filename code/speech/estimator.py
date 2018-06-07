@@ -15,12 +15,25 @@ def model_fn_linear(features, labels, mode, params):
     reg_coeff = params["reg_coeff"]
     mlp = params["mlp"]
     dropout = params["dropout"]
+    conv = params["conv"]
+
     if reg_type == "l1":
         reg = lambda x: tf.norm(x, ord=1)
     elif reg_type == "l2":
         reg = lambda x: tf.norm(x, ord=2)
     else:
         reg = None
+
+    if conv:
+        features = tf.expand_dims(features, -1)
+        features = tf.layers.conv2d(features, 64, 5, padding="same",
+                                    activation=tf.nn.relu,
+                                    kernel_regularizer=reg)
+        features = tf.layers.max_pooling2d(features, 2, 2, padding="same")
+        features = tf.layers.conv2d(features, 128, 5, padding="same",
+                                    activation=tf.nn.relu,
+                                    kernel_regularizer=reg)
+        features = tf.layers.max_pooling2d(features, 2, 2, padding="same")
 
     features = tf.layers.flatten(features)
     if mlp:
@@ -74,7 +87,7 @@ def model_fn_linear(features, labels, mode, params):
 
 
 def run(mode, base_path, model_dir,
-        batch_size, learning_rate, decay, reg, mel, mlp, dropout):
+        batch_size, learning_rate, decay, reg, mel, mlp, dropout, conv):
     prms = {"base_lr": learning_rate[0],
             "end_lr": learning_rate[1],
             "decay_steps": int(decay[0]),
@@ -82,7 +95,8 @@ def run(mode, base_path, model_dir,
             "reg_type": reg[0],
             "reg_coeff": float(reg[1]),
             "mlp": mlp,
-            "dropout": dropout}
+            "dropout": dropout,
+            "conv": conv}
 
     tf.logging.set_verbosity(tf.logging.INFO)
 

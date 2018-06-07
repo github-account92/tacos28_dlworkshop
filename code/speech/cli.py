@@ -32,8 +32,11 @@ parser.add_argument("-X", "--mlp",
 parser.add_argument("-Y", "--dropout",
                     action="store_true",
                     help="Use dropout in hidden layer.")
+parser.add_argument("-C", "--conv",
+                    action="store_true",
+                    help="Use CNN.")
 args = parser.parse_args()
 
 run(args.mode, args.base_path, args.model_dir,
     args.batch_size, args.learning_rate, args.decay, args.reg, args.mel,
-    args.mlp, args.dropout)
+    args.mlp, args.dropout, args.cnn)
