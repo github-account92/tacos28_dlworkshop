@@ -3,16 +3,25 @@
 \usepackage{graphicx}
 \usepackage[caption=false]{subfig}
 \usepackage{amsmath}
+\usepackage{caption}
 
 \title{Deep Learning in NLP: A teaser trailer\\ \small{TaCoS 2018}}
 \author{Jens Johannsmeier}
-\date{October 10, 2016}
+\date{June 09, 2018}
 
 
 \begin{document}
 
 \begin{frame}
 \titlepage
+\end{frame}
+
+
+\begin{frame}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/figures/workshop.png}
+\caption*{[11]}
+\end{figure}
 \end{frame}
 
 
@@ -86,9 +95,17 @@ Are these positive or negative statements?
 
 \begin{frame}{Machine Learning as Pattern Matching}
 \begin{figure}
+\includegraphics{pictures/figures/Perceptron-diagram.jpg}
+\caption*{[1]}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Machine Learning as Pattern Matching}
+\begin{figure}
 \includegraphics[scale=0.5]{pictures/simple/easy_solved.png}
 \end{figure}
-$c_x = 2.99, c_y = 1.37$
+\uncover<2->{$w_x = 2.99, w_y = 1.37$}
 \end{frame}
 
 
@@ -96,46 +113,296 @@ $c_x = 2.99, c_y = 1.37$
 \begin{figure}
 \includegraphics[scale=0.5]{pictures/simple/circles_polar.png}
 \end{figure}
-$c_x = 22.59, c_y = -0.21$
+\uncover<2->{$w_x = 22.59, w_y = -0.21$}
 \end{frame}
 
 
-\begin{frame}{Machine Learning as Pattern Matching}
-Examples from sentiment and maybe audio.\\
-Show limitations of simple features + linear models (no interaction).
+\begin{frame}{Machine Learning as Pattern Matching -- Speech}
+\begin{figure}
+\subfloat{\includegraphics{pictures/speech/weights_linear_three.png}}
+\subfloat{\includegraphics{pictures/speech/example_three.png}}
+\hfil
+\subfloat{\includegraphics{pictures/speech/weights_linear_tree.png}}
+\subfloat{\includegraphics{pictures/speech/example_tree.png}}
+\caption*{Learned pattern and examples for ``three'' vs. ``tree`.}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Machine Learning as Pattern Matching -- Sentiment}
+Some positive words: welcome, smiling, pleasure, proud\ldots\\ \medskip
+Some negative words: sad, RIP, headache, lonely\ldots
+\end{frame}
+
+
+\begin{frame}{Machine Learning as Pattern Matching -- Sentiment}
+Weight for ``not'': -1.1\\
+Weight for ``bad'': -1.1\\ \medskip
+
+How would ``not bad'' be treated? \uncover<2->{-2.2!!}
+\end{frame}
+
+
+\begin{frame}{The Multilayer Perceptron}
+\begin{figure}
+\includegraphics[scale=0.5]{pictures/figures/mlp.jpg}
+\caption*{[2]}
+\end{figure}
 \end{frame}
 
 
 \begin{frame}{Non-linear Feature Composition}
-Real or constructed example of XOR-like problem (e.g.~not good/bad).
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/figures/mlp2.png}
+\caption*{[3]}
+\end{figure}
 \end{frame}
 
 
-\begin{frame}{Multilayer Perceptrons}
-Large-scale examples for sentiment analysis and speech recognition, with examples of learned features!
-Show inadequacy of e.g. bag-of-words representations to motivate more complex structures (RNNs).
+\begin{frame}{The XOR Problem}
+\begin{figure}
+\includegraphics[scale=0.6]{pictures/simple/xor.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Solving XOR?}
+\begin{figure}
+\includegraphics[scale=0.6]{pictures/simple/xor_act1.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Solving XOR!}
+\begin{figure}
+\includegraphics[scale=0.6]{pictures/simple/xor_act2.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Use of Intermediate Features in Speech}
+\begin{figure}
+\subfloat{\includegraphics{pictures/speech/weights_mlp_hidden_out0_2493.png}}
+\hfil
+\subfloat{\includegraphics{pictures/speech/weights_mlp_hidden_out1_5427.png}}
+\end{figure}
+\begin{figure}
+\subfloat{\includegraphics{pictures/speech/weights_mlp_hidden_out2_4355.png}}
+\hfil
+\subfloat{\includegraphics{pictures/speech/weights_mlp_hidden_out3_6644.png}}
+\caption*{Some features favoring ``tree'' over ``three''.}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Linear Model vs MLP -- Speech}
+\begin{figure}
+\includegraphics[scale=0.45]{pictures/figures/acc_speech.png}
+\end{figure}
+Number of parameters: Linear: $\approx$ 387,000. MLP: $\approx$ 106,000,000.
+\end{frame}
+
+
+\begin{frame}{Linear Model vs MLP -- Sentiment}
+\begin{figure}
+\includegraphics[scale=0.45]{pictures/figures/acc_sent.png}
+\end{figure}
+Number of parameters: Linear: $\approx$ 111,000. MLP: $\approx$ 57,000,000.
 \end{frame}
 
 
 \begin{frame}{Recurrent Neural Networks}
-Schemes of recurrent/unrolled graphs.
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/figures/rnn.jpg}
+\caption*{[4]}
+\end{figure}
 \end{frame}
 
 
-\begin{frame}{Sentiment Analysis with RNNs}
-Show hopefully good results and how RNN handles ``not good''.\\
-Generally analyze connections etc.
+\begin{frame}{Solving ``Not good'' with RNNs}
+Design an RNN with input-to-hidden, hidden-to-hidden and hidden-to-output connections that can handle ``good'' and ``not good'' properly.
+
+\uncover<2->{\begin{itemize}
+\item One hidden unit as ``not detector'': Activate only when seeing ``not'' and keep the activation afterwards.
+\item Unit that activates through ``good'' but is also strongly inhibited by the ``not'' unit if that one is active.
+\end{itemize}}
+\end{frame}
+
+
+\begin{frame}{RNNs for Sentiment Analysis}
+\begin{figure}
+\includegraphics[scale=0.45]{pictures/figures/acc_sent_rnn.png}
+\end{figure}
+Number of parameters: MLP: $\approx$ 57,000,000. RNN: $\approx$ 57,000,000. RNN-Chars: $\approx$ 1,000,000.
 \end{frame}
 
 
 \begin{frame}{Convolutional Neural Networks}
-Give idea of same unit repeated many times over space; local connections.\\
-Visual explanation of filters.
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/figures/act_map.png}
+\caption*{[8]}
+\end{figure}
 \end{frame}
 
 
-\begin{frame}{Speech recognition with CNNs}
-Show patterns learned by CNN.
+\begin{frame}{Convolutional Neural Networks}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/figures/cnn.png}
+\caption*{[9]}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Convolutional Neural Networks}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/figures/convnet.jpeg}
+\caption*{[10]}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Some First-layer Filters}
+\begin{figure}
+\subfloat{\includegraphics[scale=15]{pictures/speech/filter_8.png}}
+\hfil
+\subfloat{\includegraphics[scale=15]{pictures/speech/filter_11.png}}
+\end{figure}
+
+\begin{figure}
+\subfloat{\includegraphics[scale=15]{pictures/speech/filter_41.png}}
+\hfil
+\subfloat{\includegraphics[scale=15]{pictures/speech/filter_59.png}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{First-layer Activation Maps}
+\begin{figure}
+\subfloat{\includegraphics[scale=2.2]{pictures/speech/actmap_1_8.png}}
+\subfloat{\includegraphics[scale=1.1]{pictures/speech/input.png}}
+\subfloat{\includegraphics[scale=2.2]{pictures/speech/actmap_1_11.png}}
+\end{figure}
+
+\begin{figure}
+\subfloat{\includegraphics[scale=2.2]{pictures/speech/actmap_1_41.png}}
+\hfil
+\subfloat{\includegraphics[scale=2.2]{pictures/speech/actmap_1_59.png}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Second Layer -- The ``T'' Filter?}
+\begin{figure}
+\subfloat{\includegraphics[scale=1.1]{pictures/speech/input.png}}
+\hfil
+\subfloat{\includegraphics[scale=4.4]{pictures/speech/actmap_2_40.png}}
+\end{figure}
+\begin{figure}
+\subfloat{\includegraphics[scale=1.1]{pictures/speech/input_another.png}}
+\hfil
+\subfloat{\includegraphics[scale=4.4]{pictures/speech/actmap_2_another_40.png}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Speech Recognition with CNNs}
+\begin{figure}
+\includegraphics[scale=0.45]{pictures/figures/acc_speech_cnn.png}
+\end{figure}
+Number of parameters: MLP: $\approx$ 106,000,000.\\ CNN: $\approx$ 110,000,000.
+\end{frame}
+
+
+\begin{frame}{Training Machine Learning Models}
+Basic ingredients:
+\begin{itemize}
+\item Performance measure (e.g. \% correct responses)
+\item Adequate loss function
+\item Training data
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Gradient Descent}
+\begin{figure}
+\includegraphics[scale=0.2]{pictures/figures/gd.png}
+\caption*{[5]}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Gradient Descent}
+\begin{figure}
+\includegraphics[scale=0.5]{pictures/figures/gs2d.png}
+\caption*{[6]}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Gradient Descent in Deep Learning}
+\begin{figure}
+\includegraphics[width=\textwidth]{pictures/figures/gd_nc.jpg}
+\caption*{[7]}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{In Summary}
+\begin{itemize}
+\item Machine learning: Find patterns in data.
+\item ``Classic'' ML: Linear methods + manual feature engineering.
+\item Deep learning: Build patterns on patterns on patterns\ldots
+\item Recurrent neural networks: Process sequences of any length with a ``memory''.
+\item Convolutional neural networks: Create ``feature maps'' from data with topology.
+\item Training neural networks is difficult due to non-convex loss functions (but somehow it works!).
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Resources}
+Deep learning theory/concepts:
+\begin{itemize}
+\item Books like \url{http://www.deeplearningbook.org/}
+\item Online classes like \url{http://cs231n.stanford.edu/}
+\item Blogs like \url{http://karpathy.github.io/}
+\item ``Visual explainers'' like \url{http://colah.github.io/} and \url{https://distill.pub/}
+\end{itemize}\medskip
+
+Deep learning frameworks:
+\begin{itemize}
+\item \url{https://www.tensorflow.org/}: Popular, always growing, a bit overwhelming.
+\item \url{https://keras.io/}: Sleek, minimalistic, not so good as a teacher.
+\item \url{https://pytorch.org/}: ???
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Credits}
+\begin{itemize}
+\item [1] \url{http://harveycohen.net/image/Perceptron-diagram.jpg}
+\item [2] \url{http://www.codeproject.com/KB/dotnet/predictor/network.jpg}
+\item [3] \url{https://github.com/PetarV-/TikZ/tree/master/Multilayer\%20perceptron}
+\item [4] \url{http://www.wildml.com/wp-content/uploads/2015/09/rnn.jpg}
+\item [5] \url{https://cdn-images-1.medium.com/max/1000/0*rBQI7uBhBKE8KT-X.png}
+\item [6] \url{http://charlesfranzen.com/images/gradient.png}
+\item [7] \url{http://ucanalytics.com/blogs/wp-content/uploads/2017/09/Polynomial-Gradient-Descent-Capatin-Kirk.jpg}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Credits}
+\begin{itemize}
+\item [8] \url{https://adeshpande3.github.io/assets/ActivationMap.png}
+\item [9] \url{https://adeshpande3.github.io/assets/Cover.png}
+\item [10] \url{http://cs231n.github.io/assets/cnn/convnet.jpeg}
+\item [11] \url{http://phdcomics.com/comics/archive/phd050514s.gif}
+\end{itemize}
+
+Datasets:
+\begin{itemize}
+\item \url{https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html}
+\item \url{http://help.sentiment140.com/for-students/}
+\end{itemize}
 \end{frame}
 
 \end{document}
