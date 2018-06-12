@@ -16,6 +16,7 @@ def model_fn_linear(features, labels, mode, params):
     mlp = params["mlp"]
     dropout = params["dropout"]
     conv = params["conv"]
+    features_orig = features
 
     if reg_type == "l1":
         reg = lambda x: tf.norm(x, ord=1)
@@ -59,7 +60,7 @@ def model_fn_linear(features, labels, mode, params):
     if mode == tf.estimator.ModeKeys.PREDICT:
         predictions = {"logits": logits,
                        "probabilities": tf.nn.softmax(logits),
-                       "input": features}
+                       "input": features_orig}
         if conv:
             predictions.update({"pool1": pool1, "pool2": pool2})
         return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)

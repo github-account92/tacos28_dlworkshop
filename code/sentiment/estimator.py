@@ -106,7 +106,7 @@ def run(mode, base_path, model_dir,
                                  config=config,
                                  params=prms)
     if rnn:
-        inp_fn = lambda x, y, z: input_fn_raw(x, y, z, chars=use_char)
+        inp_fn = lambda x, y, z, zz: input_fn_raw(x, y, z, zz, chars=use_char)
     else:
         inp_fn = input_fn_bow
 
